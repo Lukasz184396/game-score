@@ -3,48 +3,44 @@ package com.acme.gamescore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameScore
 {
-    Map<String, Integer> gameLikeCounter = new HashMap<>();
-    Map<String, Integer> gameDisLikeCounter = new HashMap<>();
-
+    private final ConcurrentHashMap<String, AtomicInteger> gameLikeCounter = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, AtomicInteger> gameDislikeCounter = new ConcurrentHashMap<>();
 
     public void like(String gameCode)
     {
-        if(gameLikeCounter.containsKey(gameCode))
-        {
-            Integer currentValue = gameLikeCounter.get(gameCode);
-            gameLikeCounter.replace(gameCode, currentValue + 1);
-        } else {
-            gameLikeCounter.put(gameCode, Integer.valueOf(1));
-        }
+        gameLikeCounter.computeIfAbsent(gameCode, k -> new AtomicInteger(0)).incrementAndGet();
     }
 
     public void dislike(String gameCode)
     {
-        if(gameDisLikeCounter.containsKey(gameCode))
-        {
-            Integer currentValue = gameDisLikeCounter.get(gameCode);
-            gameDisLikeCounter.replace(gameCode, currentValue + 1);
-        } else {
-            gameDisLikeCounter.put(gameCode, Integer.valueOf(1));
-        }
+        gameDislikeCounter.computeIfAbsent(gameCode, k -> new AtomicInteger(0)).incrementAndGet();
     }
 
     public OptionalInt getScore(String gameCode)
     {
-        Integer currentValueLike = gameLikeCounter.get(gameCode);
-        Integer currentValueDisLike = Integer.valueOf(0);
+        int likeCount = gameLikeCounter.getOrDefault(gameCode, new AtomicInteger(0)).get();
+        int dislikeCount = gameDislikeCounter.getOrDefault(gameCode, new AtomicInteger(0)).get();
 
-        if(gameDisLikeCounter.containsKey(gameCode)) {
-            gameLikeCounter.get(gameCode);
+        if (likeCount == 0 && dislikeCount == 0) {
+            return OptionalInt.empty();
         }
 
-        if(Integer.valueOf(1).equals(currentValueLike) && Integer.valueOf(0).equals(currentValueDisLike)) {
+        if (likeCount > 0 && dislikeCount == 0) {
             return OptionalInt.of(10);
         }
 
-        return OptionalInt.empty();
+        if (likeCount == 0 && dislikeCount > 0) {
+            return OptionalInt.of(0);
+        }
+
+        double ratio = (double) likeCount / (likeCount + dislikeCount);
+        int score = (int) Math.ceil(ratio * 10); // Use Math.ceil to ensure rounding up
+
+        return OptionalInt.of(score);
     }
 }
