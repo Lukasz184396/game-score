@@ -11,18 +11,15 @@ public class GameScore
     private final ConcurrentHashMap<String, AtomicInteger> gameLikeCounter = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, AtomicInteger> gameDislikeCounter = new ConcurrentHashMap<>();
 
-    public void like(String gameCode)
-    {
+    public void like(String gameCode) {
         gameLikeCounter.computeIfAbsent(gameCode, k -> new AtomicInteger(0)).incrementAndGet();
     }
 
-    public void dislike(String gameCode)
-    {
+    public void dislike(String gameCode) {
         gameDislikeCounter.computeIfAbsent(gameCode, k -> new AtomicInteger(0)).incrementAndGet();
     }
 
-    public OptionalInt getScore(String gameCode)
-    {
+    public OptionalInt getScore(String gameCode) {
         int likeCount = gameLikeCounter.getOrDefault(gameCode, new AtomicInteger(0)).get();
         int dislikeCount = gameDislikeCounter.getOrDefault(gameCode, new AtomicInteger(0)).get();
 
