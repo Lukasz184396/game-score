@@ -1,7 +1,5 @@
 package com.acme.gamescore;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.OptionalInt;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
